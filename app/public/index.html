@@ -24,7 +24,6 @@
 		</tbody>
 	</table>
 
-	<script src="gags.js"></script>
 	<script type="text/javascript">
 		function clearCalc(event) {
 			let div = document.getElementById("calculation");
@@ -34,36 +33,44 @@
 		clear = document.getElementById("clear");
 		clear.addEventListener("click", clearCalc);
 
-		function createTable(){
-			let buttons = []
-			for (let pairObj of Object.entries(gags)) {
-				keyObj = pairObj[0];
-        		valueObj = pairObj[1];
-				let row = document.createElement("tr");
-				for (let pair of Object.entries(valueObj)) {
-					key = pair[0];
-        			value = pair[1];
+		function createTable() {
+			let url = "/gags";
+			fetch(url).then(response => {
+				return response.json();
+    		}).then((body) => {
+				let row;
+				for (let data of body.gag) {
+					if (data.id % 7 === 1) {
+						row = document.createElement("tr");
+					}
+
 					let cell = document.createElement("td");
 					let button = document.createElement("button");
-					button.textContent = value.name
-					button.id = keyObj
-					button.className = key
-					buttons.push(button)
+					button.textContent = data.gagname;
+					button.id = data.gagname;
+					button.addEventListener("click", () => {
+						let div = document.getElementById("calculation");
+						fetch(`/gags?gag=${button.id}`).then(response => {
+        					return response.json();
+    					}).then((gag) => {
+							div.textContent = parseInt(div.textContent) + gag.gag[0].maxdmg;
+						}).catch((error) => {
+        					;
+    					});
+					});
 					cell.appendChild(button);
 					row.appendChild(cell);
-				}
-				document.getElementById("gags").appendChild(row);
-			}
-			return buttons;
-		}
 
-		let buttons = createTable();
-		for (let button of buttons) {
-			button.addEventListener("click", () => {
-				let div = document.getElementById("calculation");
-				div.textContent = parseInt(div.textContent) + gags[button.id][button.className]["maximum-dmg"];
-			});
+					if (data.id % 7 === 0) {
+						document.getElementById("gags").appendChild(row);
+					}
+				}
+    		}).catch((error) => {
+        		;
+    		});
 		}
+		
+		createTable();
 	</script>
 
 
