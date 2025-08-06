@@ -1,4 +1,4 @@
-DROP DATABASE tt_calc;
+--DROP DATABASE tt_calc;
 CREATE DATABASE tt_calc;
 \c tt_calc
 CREATE TABLE gags (

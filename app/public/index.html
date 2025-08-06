@@ -4,7 +4,6 @@
 	<meta charset="utf-8">
 	<title>Starter</title>
 	<style type="text/css">
-		/* TODO */
 		table {
 			border-collapse: collapse;
 		}
@@ -28,97 +27,41 @@
 
 	<script type="text/javascript">
 		let gags = [];
-		let trappedGag;
+		let trappedGag = {};
 		let lured = false;
 
-		function calculateTrack(similarGags) {
-			let gagTypeDamage = 0;
-			let totalDamage = 0;
-
-			for (let similarGag of similarGags) {
-				gagTypeDamage += similarGag.maxdmg;
-			}
-
-			if (similarGags[0].gagtype === "Toon-Up") {
-				;
-			} else if (similarGags[0].gagtype === "Trap") {
-				if (similarGags.length > 1) {
-					trappedGag = undefined;
-				} else if (trappedGag === undefined) {
-					trappedGag = similarGags[0];
-				} else {
-					;
-				}
-			} else if (similarGags[0].gagtype === "Lure") {
-				if (trappedGag === undefined) {
-					lured = true;
-				} else {
-					totalDamage += trappedGag.maxdmg;
-					trappedGag = undefined;
-				}
-			} else if (similarGags[0].gagtype === "Sound") {
-				if (similarGags.length > 1) {
-					gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
-				}
-				totalDamage += gagTypeDamage;
-				lured = false;
-			} else if (similarGags[0].gagtype === "Drop") {
-				if (similarGags.length > 1) {
-					gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
-				}
-				if (!lured) {
-					totalDamage += gagTypeDamage;
-				}
-			} else {
-				let comboBonus = 0;
-				if (similarGags.length > 1) {
-					comboBonus = Math.ceil(gagTypeDamage * 0.2);
-				}
-				if (lured) {
-					totalDamage += Math.ceil(gagTypeDamage * 1.5) + comboBonus;
-				} else {
-					totalDamage += gagTypeDamage + comboBonus;
-				}
-				lured = false;
-			}
-			return totalDamage;
-		}
-
 		function calculate(event) {
-			gags.sort((a, b) => a.id - b.id);
-			let similarGags = [];
-			let totalDamage = 0;
-			let gagIndex = 0;
-
-			for (let gag of gags) {
-				gagIndex++;
-				if (similarGags.length === 0 || (similarGags[0].gagtype === gag.gagtype)) {
-					similarGags.push(gag);
-					if (gagIndex !== gags.length) {
-						continue;
-					}
-				}
-
-				totalDamage += calculateTrack(similarGags);
-
-				if (gagIndex === gags.length && (similarGags[0].gagtype !== gag.gagtype)) {
-					totalDamage += calculateTrack([gag]);
-				} else {
-					similarGags = [];
-					similarGags.push(gag);
-				}
-			}
-			
-			let div = document.getElementById("calculation");
-			div.textContent = parseInt(div.textContent) + totalDamage;
-			gags = [];
+			fetch("/calculate",
+        		{
+        		headers: {
+        		    'Accept': 'application/json',
+        		    'Content-Type': 'application/json'
+        		},
+        		method: "POST",
+        		body: JSON.stringify({"gags": gags, "trappedGag": trappedGag, "lured": lured})}
+    		).then(response => {
+    		    return response.json();
+    		}).then((body) => {
+    		    if (body.hasOwnProperty("totalDamage")) {
+    		        let div = document.getElementById("calculation");
+					div.textContent = parseInt(div.textContent) + body.totalDamage;
+					trappedGag = body.trappedGag;
+					lured = body.lured;
+					console.log(trappedGag)
+    		    } else {
+    		        ;
+    		    }
+				gags = [];
+    		}).catch((error) => {
+    		    gags = [];
+    		});
 		}
 		function clearCalc(event) {
 			let div = document.getElementById("calculation");
 			div.textContent = 0;
 			gags = [];
 			lured = false;
-			trapped = undefined;
+			trappedGag = {};
 		}
 		function resetCalc(event) {
 			gags = [];
@@ -136,7 +79,6 @@
 			fetch(`/gags?gag=${gagName}`).then(response => {
         		return response.json();
     		}).then((gag) => {
-				//div.textContent = parseInt(div.textContent) + gag.gag[0].maxdmg;
 				gags.push(gag.gag[0]);
 			}).catch((error) => {
         		;
