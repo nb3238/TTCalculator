@@ -16,7 +16,9 @@
 	</head>
 <body>
 	<div id="calculation">0</div>
+	<button id="calculate">Calculate</button>
 	<button id="clear">Clear</button>
+	<button id="reset">Reset Turn</button>
 
 	<table>
 		<tbody id="gags">
@@ -25,13 +27,121 @@
 	</table>
 
 	<script type="text/javascript">
+		let gags = [];
+		let trappedGag;
+		let lured = false;
+
+		function calculateTrack(similarGags) {
+			let gagTypeDamage = 0;
+			let totalDamage = 0;
+
+			for (let similarGag of similarGags) {
+				gagTypeDamage += similarGag.maxdmg;
+			}
+
+			if (similarGags[0].gagtype === "Toon-Up") {
+				;
+			} else if (similarGags[0].gagtype === "Trap") {
+				if (similarGags.length > 1) {
+					trappedGag = undefined;
+				} else if (trappedGag === undefined) {
+					trappedGag = similarGags[0];
+				} else {
+					;
+				}
+			} else if (similarGags[0].gagtype === "Lure") {
+				if (trappedGag === undefined) {
+					lured = true;
+				} else {
+					totalDamage += trappedGag.maxdmg;
+					trappedGag = undefined;
+				}
+			} else if (similarGags[0].gagtype === "Sound") {
+				if (similarGags.length > 1) {
+					gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
+				}
+				totalDamage += gagTypeDamage;
+				lured = false;
+			} else if (similarGags[0].gagtype === "Drop") {
+				if (similarGags.length > 1) {
+					gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
+				}
+				if (!lured) {
+					totalDamage += gagTypeDamage;
+				}
+			} else {
+				let comboBonus = 0;
+				if (similarGags.length > 1) {
+					comboBonus = Math.ceil(gagTypeDamage * 0.2);
+				}
+				if (lured) {
+					totalDamage += Math.ceil(gagTypeDamage * 1.5) + comboBonus;
+				} else {
+					totalDamage += gagTypeDamage + comboBonus;
+				}
+				lured = false;
+			}
+			return totalDamage;
+		}
+
+		function calculate(event) {
+			gags.sort((a, b) => a.id - b.id);
+			let similarGags = [];
+			let totalDamage = 0;
+			let gagIndex = 0;
+
+			for (let gag of gags) {
+				gagIndex++;
+				if (similarGags.length === 0 || (similarGags[0].gagtype === gag.gagtype)) {
+					similarGags.push(gag);
+					if (gagIndex !== gags.length) {
+						continue;
+					}
+				}
+
+				totalDamage += calculateTrack(similarGags);
+
+				if (gagIndex === gags.length && (similarGags[0].gagtype !== gag.gagtype)) {
+					totalDamage += calculateTrack([gag]);
+				} else {
+					similarGags = [];
+					similarGags.push(gag);
+				}
+			}
+			
+			let div = document.getElementById("calculation");
+			div.textContent = parseInt(div.textContent) + totalDamage;
+			gags = [];
+		}
 		function clearCalc(event) {
 			let div = document.getElementById("calculation");
 			div.textContent = 0;
+			gags = [];
+			lured = false;
+			trapped = undefined;
+		}
+		function resetCalc(event) {
+			gags = [];
 		}
 
-		clear = document.getElementById("clear");
+		let calc = document.getElementById("calculate");
+		let clear = document.getElementById("clear");
+		let reset = document.getElementById("reset");
+		calc.addEventListener("click", calculate);
 		clear.addEventListener("click", clearCalc);
+		reset.addEventListener("click", resetCalc);
+
+		function gagButton(gagName, event) {
+			let div = document.getElementById("calculation");
+			fetch(`/gags?gag=${gagName}`).then(response => {
+        		return response.json();
+    		}).then((gag) => {
+				//div.textContent = parseInt(div.textContent) + gag.gag[0].maxdmg;
+				gags.push(gag.gag[0]);
+			}).catch((error) => {
+        		;
+    		});
+		}
 
 		function createTable() {
 			let url = "/gags";
@@ -48,16 +158,7 @@
 					let button = document.createElement("button");
 					button.textContent = data.gagname;
 					button.id = data.gagname;
-					button.addEventListener("click", () => {
-						let div = document.getElementById("calculation");
-						fetch(`/gags?gag=${button.id}`).then(response => {
-        					return response.json();
-    					}).then((gag) => {
-							div.textContent = parseInt(div.textContent) + gag.gag[0].maxdmg;
-						}).catch((error) => {
-        					;
-    					});
-					});
+					button.addEventListener("click", (x) => gagButton(button.id, x));
 					cell.appendChild(button);
 					row.appendChild(cell);
 
