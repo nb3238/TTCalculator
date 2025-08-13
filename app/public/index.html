@@ -27,8 +27,7 @@
 
 	<script type="text/javascript">
 		let gags = [];
-		let trappedGag = {};
-		let lured = false;
+		let status = {};
 
 		function calculate(event) {
 			fetch("/calculate",
@@ -38,16 +37,14 @@
         		    'Content-Type': 'application/json'
         		},
         		method: "POST",
-        		body: JSON.stringify({"gags": gags, "trappedGag": trappedGag, "lured": lured})}
+				body: JSON.stringify({"gags": gags, "status": status})}
     		).then(response => {
     		    return response.json();
     		}).then((body) => {
     		    if (body.hasOwnProperty("totalDamage")) {
     		        let div = document.getElementById("calculation");
 					div.textContent = parseInt(div.textContent) + body.totalDamage;
-					trappedGag = body.trappedGag;
-					lured = body.lured;
-					console.log(trappedGag)
+					status = body.status
     		    } else {
     		        ;
     		    }
@@ -60,8 +57,7 @@
 			let div = document.getElementById("calculation");
 			div.textContent = 0;
 			gags = [];
-			lured = false;
-			trappedGag = {};
+			status = {};
 		}
 		function resetCalc(event) {
 			gags = [];

@@ -15,44 +15,144 @@ pool.connect().then(function () {
 app.use(express.static("public"));
 app.use(express.json());
 
-function calculateTrack(similarGags, trappedGag, lured) {
+class Gag {
+  constructor(data) {
+    this.data = data;
+    this.status = [];
+    this.orgBoost = 1.1;
+  }
+
+  applyStatus(name, value) {
+    this.status[name] = value;
+  }
+
+  getDmg(status) {
+    let dmg = this.data.maxdmg;
+    if (this.status.hasOwnProperty("organic")) {
+      dmg *= Math.ceil(dmg * this.orgBoost);
+    }
+    if (this.status.hasOwnProperty("attackUp")) {
+      dmg *= Math.ceil(dmg * this.status.attackUp);
+    }
+    if (status.hasOwnProperty("defenseUp")) {
+      dmg -= Math.ceil(dmg * status.defenseUp);
+    }
+    return dmg;
+  }
+}
+
+class ToonUp extends Gag {
+  constructor(data) {
+    super(data);
+  }
+
+  getDmg(status) {
+    return 0;
+  }
+}
+
+class Trap extends Gag {
+  constructor(data) {
+    super(data);
+  }
+}
+
+class Lure extends Gag {
+  constructor(data) {
+    super(data);
+  }
+
+  getDmg(status) {
+    return 0;
+  }
+}
+
+class Sound extends Gag {
+  constructor(data) {
+    super(data);
+  }
+}
+
+class Throw extends Gag {
+  constructor(data) {
+    super(data);
+  }
+}
+
+class Squirt extends Gag {
+  constructor(data) {
+    super(data);
+    this.orgBoost = 1.15;
+  }
+}
+
+class Drop extends Gag {
+  constructor(data) {
+    super(data);
+    this.orgBoost = 1.15;
+  }
+}
+
+function getGagTrack(gag) {
+  if (gag.gagtype === "Toon-Up") {
+    return new ToonUp(gag)
+  } else if (gag.gagtype === "Trap") {
+    return new Trap(gag)
+  } else if (gag.gagtype === "Lure") {
+    return new Lure(gag)
+  } else if (gag.gagtype === "Sound") {
+    return new Sound(gag)
+  } else if (gag.gagtype === "Throw") {
+    return new Throw(gag)
+  } else if (gag.gagtype === "Squirt") {
+    return new Squirt(gag)
+  } else if (gag.gagtype === "Drop") {
+    return new Drop(gag)
+  } else {
+    throw new Error("Not a valid gag track.");
+  }
+}
+
+function calculateTrack(similarGags, status) {
   let gagTypeDamage = 0;
   let totalDamage = 0;
 
   for (let similarGag of similarGags) {
-    gagTypeDamage += similarGag.maxdmg;
+    let gag = getGagTrack(similarGag);
+    gagTypeDamage += gag.getDmg(status);
   }
 
   if (similarGags[0].gagtype === "Toon-Up") {
     ;
   } else if (similarGags[0].gagtype === "Trap") {
     if (similarGags.length > 1) {
-      trappedGag = {};
-    } else if (trappedGag.hasOwnProperty("gag")) {
+      delete status.trapped
+    } else if (status.hasOwnProperty("trapped")) {
       ;
-    } else if (lured) {
+    } else if (status.hasOwnProperty("lured")) {
       ;
     } else {
-      trappedGag = {"gag": similarGags[0]};
+      status.trapped = {"value": similarGags[0].maxdmg, "rounds": -1};
     }
   } else if (similarGags[0].gagtype === "Lure") {
-    if (!trappedGag.hasOwnProperty("gag")) {
-      lured = true;
+    if (!status.hasOwnProperty("trapped")) {
+      similarGags.sort((a, b) => b.statuseffect.lured.rounds - a.statuseffect.lured.rounds);
+      status.lured = {"rounds": similarGags[0].statuseffect.lured.rounds};
     } else {
-      totalDamage += trappedGag.gag.maxdmg;
-      trappedGag = {};
+      totalDamage += status.trapped.value;
+      delete status.trapped;
     }
   } else if (similarGags[0].gagtype === "Sound") {
     if (similarGags.length > 1) {
       gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
     }
     totalDamage += gagTypeDamage;
-    lured = false;
+    delete status.lured;
   } else if (similarGags[0].gagtype === "Drop") {
     if (similarGags.length > 1) {
       gagTypeDamage = Math.ceil(gagTypeDamage * 1.2);
     }
-    if (!lured) {
+    if (!status.hasOwnProperty("lured")) {
       totalDamage += gagTypeDamage;
     }
   } else {
@@ -60,21 +160,20 @@ function calculateTrack(similarGags, trappedGag, lured) {
     if (similarGags.length > 1) {
       comboBonus = Math.ceil(gagTypeDamage * 0.2);
     }
-    if (lured) {
+    if (status.hasOwnProperty("lured")) {
       totalDamage += Math.ceil(gagTypeDamage * 1.5) + comboBonus;
     } else {
       totalDamage += gagTypeDamage + comboBonus;
     }
-    lured = false;
+    delete status.lured;
   }
-  return {"totalDamage": totalDamage, "trappedGag": trappedGag, "lured": lured};
+  return {"totalDamage": totalDamage, "status": status};
 }
 
 app.post("/calculate", (req, res) => {
   let body = req.body;
-  if (!body.hasOwnProperty("gags") ||
-      !body.hasOwnProperty("trappedGag") ||
-      !body.hasOwnProperty("lured")) {
+  
+  if (!body.hasOwnProperty("gags") || !body.hasOwnProperty("status")) {
     return res.status(400).json({});
   }
 
@@ -82,8 +181,7 @@ app.post("/calculate", (req, res) => {
   if (!Array.isArray(gags)) {
     return res.status(400).json({});
   }
-  let trappedGag = body.trappedGag;
-  let lured = body.lured
+  let status = body.status;
 
   gags.sort((a, b) => a.id - b.id);
 	let similarGags = [];
@@ -100,23 +198,21 @@ app.post("/calculate", (req, res) => {
 			}
 		}
 
-		calculation = calculateTrack(similarGags, trappedGag, lured);
+    calculation = calculateTrack(similarGags, status);
     totalDamage += calculation.totalDamage;
-    trappedGag = calculation.trappedGag;
-    lured = calculation.lured;
+    status = calculation.status;
 
 		if (gagIndex === gags.length && (similarGags[0].gagtype !== gag.gagtype)) {
-			calculation = calculateTrack([gag], trappedGag, lured);
+			calculation = calculateTrack([gag], status);
       totalDamage += calculation.totalDamage;
-      trappedGag = calculation.trappedGag;
-      lured = calculation.lured;
+      status = calculation.status;
 		} else {
 			similarGags = [];
 			similarGags.push(gag);
 		}
 	}
-			
-	res.json({"totalDamage": totalDamage, "trappedGag": trappedGag, "lured": lured});
+	console.log(status);
+  res.json({"totalDamage": totalDamage, "status": status});
 });
 
 app.get("/gags", (req, res) => {
