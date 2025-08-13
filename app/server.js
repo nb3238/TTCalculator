@@ -211,6 +211,14 @@ app.post("/calculate", (req, res) => {
 			similarGags.push(gag);
 		}
 	}
+  for (let pair of Object.entries(status)) {
+    let stat = status[pair[0]];
+    if (stat.rounds == 1) {
+      delete status[pair[0]];
+    } else {
+      stat.rounds--;
+    }
+  }
 	console.log(status);
   res.json({"totalDamage": totalDamage, "status": status});
 });

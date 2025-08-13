@@ -15,9 +15,9 @@
 	</head>
 <body>
 	<div id="calculation">0</div>
-	<button id="calculate">Calculate</button>
+	<!--<button id="calculate">Calculate</button>-->
+	<button id="next">Next Turn</button>
 	<button id="clear">Clear</button>
-	<button id="reset">Reset Turn</button>
 
 	<table>
 		<tbody id="gags">
@@ -26,10 +26,14 @@
 	</table>
 
 	<script type="text/javascript">
+		let initDmg = 0;
+		let totalDmg = 0;
 		let gags = [];
+		let initStatus = {};
 		let status = {};
 
-		function calculate(event) {
+		//function calculate(event) {
+		function calculate() {
 			fetch("/calculate",
         		{
         		headers: {
@@ -37,38 +41,46 @@
         		    'Content-Type': 'application/json'
         		},
         		method: "POST",
-				body: JSON.stringify({"gags": gags, "status": status})}
+				body: JSON.stringify({"gags": gags, "status": initStatus})}
     		).then(response => {
     		    return response.json();
     		}).then((body) => {
     		    if (body.hasOwnProperty("totalDamage")) {
     		        let div = document.getElementById("calculation");
-					div.textContent = parseInt(div.textContent) + body.totalDamage;
+					//div.textContent = parseInt(div.textContent) + body.totalDamage;
+					totalDmg = initDmg + body.totalDamage;
+					div.textContent = totalDmg;
 					status = body.status
     		    } else {
     		        ;
     		    }
-				gags = [];
+				//gags = [];
     		}).catch((error) => {
-    		    gags = [];
+    		    //gags = [];
+				;
     		});
 		}
 		function clearCalc(event) {
 			let div = document.getElementById("calculation");
 			div.textContent = 0;
+			initDmg = 0;
+			totalDmg = 0;
 			gags = [];
+			initStatus = {};
 			status = {};
 		}
-		function resetCalc(event) {
+		function nextTurn(event) {
 			gags = [];
+			initStatus = status;
+			initDmg = totalDmg;
 		}
 
-		let calc = document.getElementById("calculate");
+		//let calc = document.getElementById("calculate");
+		let next = document.getElementById("next");
 		let clear = document.getElementById("clear");
-		let reset = document.getElementById("reset");
-		calc.addEventListener("click", calculate);
+		//calc.addEventListener("click", calculate);
+		next.addEventListener("click", nextTurn);
 		clear.addEventListener("click", clearCalc);
-		reset.addEventListener("click", resetCalc);
 
 		function gagButton(gagName, event) {
 			let div = document.getElementById("calculation");
@@ -76,6 +88,7 @@
         		return response.json();
     		}).then((gag) => {
 				gags.push(gag.gag[0]);
+				calculate();
 			}).catch((error) => {
         		;
     		});
