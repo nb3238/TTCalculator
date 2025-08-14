@@ -28,14 +28,14 @@ class Gag {
 
   getDmg(status) {
     let dmg = this.data.maxdmg;
-    if (this.status.hasOwnProperty("organic")) {
-      dmg *= Math.ceil(dmg * this.orgBoost);
+    if (this.data.statuseffect.hasOwnProperty("organic")) {
+      dmg = Math.ceil((dmg * this.orgBoost).toFixed(1));
     }
-    if (this.status.hasOwnProperty("attackUp")) {
-      dmg *= Math.ceil(dmg * this.status.attackUp);
+    if (this.data.statuseffect.hasOwnProperty("attackUp")) {
+      dmg += Math.ceil((dmg * this.data.statuseffect.attackUp).toFixed(1));
     }
     if (status.hasOwnProperty("defenseUp")) {
-      dmg -= Math.ceil(dmg * status.defenseUp);
+      dmg -= Math.ceil((dmg * status.defenseUp).toFixed(1));
     }
     return dmg;
   }
@@ -132,7 +132,7 @@ function calculateTrack(similarGags, status) {
     } else if (status.hasOwnProperty("lured")) {
       ;
     } else {
-      status.trapped = {"value": similarGags[0].maxdmg, "rounds": -1};
+      status.trapped = {"value": gagTypeDamage, "rounds": -1};
     }
   } else if (similarGags[0].gagtype === "Lure") {
     if (!status.hasOwnProperty("trapped")) {
@@ -211,15 +211,6 @@ app.post("/calculate", (req, res) => {
 			similarGags.push(gag);
 		}
 	}
-  for (let pair of Object.entries(status)) {
-    let stat = status[pair[0]];
-    if (stat.rounds == 1) {
-      delete status[pair[0]];
-    } else {
-      stat.rounds--;
-    }
-  }
-	console.log(status);
   res.json({"totalDamage": totalDamage, "status": status});
 });
 

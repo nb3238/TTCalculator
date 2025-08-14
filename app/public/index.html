@@ -11,10 +11,31 @@
 			border: 1px solid black;
 			padding: 5px;
 		}
+		ul {
+			display: flex;
+			padding: 0;
+  			margin: 0;
+		}
+		li {
+			padding-right: 10px;
+			padding-left: 10px;
+		}
+		#grid {
+			display: flex;
+			padding: 0;
+  			margin: 0;
+			height: 50px;
+		}
 	</style>
 	</head>
 <body>
-	<div id="calculation">0</div>
+	<ul style="list-style-type: none; margin: 0; padding: 0;">
+		<div id="grid">
+					
+		</div>
+		<li id="calculation">0</li>
+	</ul>
+	<!--<div id="calculation">0</div>-->
 	<!--<button id="calculate">Calculate</button>-->
 	<button id="next">Next Turn</button>
 	<button id="clear">Clear</button>
@@ -31,6 +52,60 @@
 		let gags = [];
 		let initStatus = {};
 		let status = {};
+
+		function orgButton (gagIndex, event) {
+			if (gags[gagIndex].statuseffect.hasOwnProperty("organic")) {
+				delete gags[gagIndex].statuseffect.organic;
+			} else {
+				gags[gagIndex].statuseffect.organic = 0;
+			}
+			calculate();
+		}
+
+		function updateCalc() {
+			let grid = document.getElementById("grid");
+			while (grid.firstChild) {
+  				grid.removeChild(grid.firstChild);
+			}
+
+			if (initDmg > 0 && gags.length > 0) {
+				let cell = document.createElement("li");
+				cell.textContent = initDmg;
+				grid.appendChild(cell);
+				let operator = document.createElement("li");
+				operator.textContent = "+";
+				grid.appendChild(operator);
+			}
+
+			let gagIndex = 1;
+			for (let gag of gags) {
+				let div = document.createElement("div");
+				div.classList.add("gag");
+				/*let X = document.createElement("button");
+				X.classList.add("gagButton");
+				X.textContent = "X";
+				div.appendChild(X);*/
+				let org = document.createElement("button");
+				org.classList.add("gagButton");
+				org.id = gagIndex - 1;
+				org.textContent = "Org";
+				org.addEventListener("click", (x) => orgButton(org.id, x));
+				div.appendChild(org);
+				let cell = document.createElement("li");
+				cell.classList.add("gagIcon");
+				cell.textContent = gag.gagname;
+				div.appendChild(cell);
+				grid.appendChild(div);
+				let operator = document.createElement("li");
+				if (gagIndex === gags.length) {
+					operator.textContent = "=";
+				} else {
+					operator.textContent = "+";
+				}
+				grid.appendChild(operator);
+				gagIndex++;
+			}
+		}
 
 		//function calculate(event) {
 		function calculate() {
@@ -51,13 +126,14 @@
 					totalDmg = initDmg + body.totalDamage;
 					div.textContent = totalDmg;
 					status = body.status
+					updateCalc();
     		    } else {
-    		        ;
+    		        gags.pop();
     		    }
 				//gags = [];
     		}).catch((error) => {
     		    //gags = [];
-				;
+				gags.pop();
     		});
 		}
 		function clearCalc(event) {
@@ -68,11 +144,21 @@
 			gags = [];
 			initStatus = {};
 			status = {};
+			updateCalc();
 		}
 		function nextTurn(event) {
 			gags = [];
 			initStatus = status;
 			initDmg = totalDmg;
+			for (let pair of Object.entries(initStatus)) {
+    			let stat = initStatus[pair[0]];
+    			if (stat.rounds == 1) {
+      				delete initStatus[pair[0]];
+    			} else {
+      				stat.rounds--;
+    			}
+ 			}
+			updateCalc();
 		}
 
 		//let calc = document.getElementById("calculate");
