@@ -62,6 +62,11 @@
 			calculate();
 		}
 
+		function xButton (gagIndex, event) {
+			gags.splice(gagIndex, 1);
+			calculate();
+		}
+
 		function updateCalc() {
 			let grid = document.getElementById("grid");
 			while (grid.firstChild) {
@@ -81,15 +86,17 @@
 			for (let gag of gags) {
 				let div = document.createElement("div");
 				div.classList.add("gag");
-				/*let X = document.createElement("button");
+				div.id = gagIndex - 1;
+				let X = document.createElement("button");
 				X.classList.add("gagButton");
 				X.textContent = "X";
-				div.appendChild(X);*/
+				X.addEventListener("click", (x) => xButton(div.id, x));
+				div.appendChild(X);
 				let org = document.createElement("button");
 				org.classList.add("gagButton");
-				org.id = gagIndex - 1;
 				org.textContent = "Org";
-				org.addEventListener("click", (x) => orgButton(org.id, x));
+				org.style.float = "right";
+				org.addEventListener("click", (x) => orgButton(div.id, x));
 				div.appendChild(org);
 				let cell = document.createElement("li");
 				cell.classList.add("gagIcon");
