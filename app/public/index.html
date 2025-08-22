@@ -6,6 +6,7 @@
 	<style type="text/css">
 		table {
 			border-collapse: collapse;
+			table-layout: fixed;
 		}
 		td {
 			border: 1px solid black;
@@ -40,11 +41,16 @@
 	<button id="next">Next Turn</button>
 	<button id="clear">Clear</button>
 
-	<table>
-		<tbody id="gags">
+	<div>
+		<table style="width: 60%; float: left;">
+			<tbody id="gags">
 		
-		</tbody>
-	</table>
+			</tbody>
+		</table>
+		<div id="gagInfo" style="width: 30%; float: right;">
+
+		</div>
+	</div>
 
 	<script type="text/javascript">
 		let initDmg = 0;
@@ -52,6 +58,80 @@
 		let gags = [];
 		let initStatus = {};
 		let status = {};
+
+		function hideGagInfo(event) {
+			let div = document.getElementById("gagInfo");
+			while (div.firstChild) {
+  				div.removeChild(div.firstChild);
+			}
+		}
+
+		function showGagInfo(gagName) {
+			let div = document.getElementById("gagInfo");
+			while (div.firstChild) {
+  				div.removeChild(div.firstChild);
+			}
+			
+			fetch(`/gags?gag=${gagName}`).then(response => {
+        		return response.json();
+    		}).then((body) => {
+				let gag = body.gag[0];
+				let name = document.createElement("p");
+				let dmg = document.createElement("p");
+				let acc = document.createElement("p");
+				let targetNum = document.createElement("p");
+				name.textContent = gag.gagname;
+				if (gag.gagtype === "Lure") {
+					dmg.textContent = "Lured Rounds: " + gag.statuseffect.lured.rounds;
+				} else {
+					dmg.textContent = "Damage: "
+					if (gag.mindmg === gag.maxdmg) {
+						dmg.textContent += gag.maxdmg;
+					} else {
+						dmg.textContent += gag.mindmg + "-" + gag.maxdmg;
+					}
+				}
+				acc.textContent = "Accuracy: ";
+				if (gag.accuracy < 0) {
+					acc.textContent += "100% (Perfect)";
+				} else if (gag.accuracy <= 50) {
+					acc.textContent += gag.accuracy + "% (Very Low)";
+				} else if (gag.accuracy < 70) {
+					acc.textContent += gag.accuracy + "% (Low)";
+				} else if (gag.accuracy < 80) {
+					acc.textContent += gag.accuracy + "% (Medium)";
+				} else {
+					acc.textContent += gag.accuracy + "% (High)";
+				}
+				targetNum.textContent = "Affects: ";
+				if (gag.targetnum < 0) {
+					targetNum.textContent += "All";
+				} else {
+					targetNum.textContent += gag.targetnum;
+				}
+				if (gag.targetnum === 1) {
+					if (gag.gagtype === "Toon-Up") {
+						targetNum.textContent += " Toon";
+					} else {
+						targetNum.textContent += " Cog";
+					}
+				} else {
+					if (gag.gagtype === "Toon-Up") {
+						targetNum.textContent += " Toons";
+					} else {
+						targetNum.textContent += " Cogs";
+					}
+				}
+				div.appendChild(name);
+				div.appendChild(dmg);
+				div.appendChild(acc);
+				div.appendChild(targetNum);
+			}).catch((error) => {
+        		while (div.firstChild) {
+  					div.removeChild(div.firstChild);
+				}
+    		}); 
+		}
 
 		function orgButton (gagIndex, event) {
 			if (gags[gagIndex].statuseffect.hasOwnProperty("organic")) {
@@ -175,6 +255,10 @@
 		next.addEventListener("click", nextTurn);
 		clear.addEventListener("click", clearCalc);
 
+		function gagHoverOn(gagName, event) {
+			showGagInfo(gagName);
+		}
+
 		function gagButton(gagName, event) {
 			let div = document.getElementById("calculation");
 			fetch(`/gags?gag=${gagName}`).then(response => {
@@ -203,6 +287,8 @@
 					button.textContent = data.gagname;
 					button.id = data.gagname;
 					button.addEventListener("click", (x) => gagButton(button.id, x));
+					cell.addEventListener("mouseenter", (x) => gagHoverOn(button.id, x));
+					cell.addEventListener("mouseleave", hideGagInfo);
 					cell.appendChild(button);
 					row.appendChild(cell);
 
