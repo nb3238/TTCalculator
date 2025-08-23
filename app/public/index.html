@@ -58,6 +58,8 @@
 		let gags = [];
 		let initStatus = {};
 		let status = {};
+		let clickedGag;
+		let hoveredGag = false;
 
 		function hideGagInfo(event) {
 			let div = document.getElementById("gagInfo");
@@ -70,6 +72,10 @@
 			let div = document.getElementById("gagInfo");
 			while (div.firstChild) {
   				div.removeChild(div.firstChild);
+			}
+
+			if (gagName === undefined) {
+				return;
 			}
 			
 			fetch(`/gags?gag=${gagName}`).then(response => {
@@ -139,11 +145,15 @@
 			} else {
 				gags[gagIndex].statuseffect.organic = 0;
 			}
+			clickedGag = gags[gagIndex].gagname;
+			showGagInfo(clickedGag);
 			calculate();
 		}
 
 		function xButton (gagIndex, event) {
 			gags.splice(gagIndex, 1);
+			clickedGag = undefined;
+			hideGagInfo();
 			calculate();
 		}
 
@@ -231,6 +241,8 @@
 			gags = [];
 			initStatus = {};
 			status = {};
+			clickedGag = undefined;
+			hideGagInfo();
 			updateCalc();
 		}
 		function nextTurn(event) {
@@ -245,6 +257,8 @@
       				stat.rounds--;
     			}
  			}
+			clickedGag = undefined;
+			hideGagInfo();
 			updateCalc();
 		}
 
@@ -264,6 +278,7 @@
 			fetch(`/gags?gag=${gagName}`).then(response => {
         		return response.json();
     		}).then((gag) => {
+				clickedGag = gag.gag[0].gagname;
 				gags.push(gag.gag[0]);
 				calculate();
 			}).catch((error) => {
@@ -273,6 +288,9 @@
 
 		function createTable() {
 			let url = "/gags";
+			document.getElementById("gags").addEventListener("mouseleave", () => {
+				showGagInfo(clickedGag);
+			});
 			fetch(url).then(response => {
 				return response.json();
     		}).then((body) => {
