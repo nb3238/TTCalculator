@@ -235,6 +235,19 @@ app.get("/gags", (req, res) => {
     });
 });
 
+app.get("/info", (req, res) => {
+  let query = req.query;
+  if (query.hasOwnProperty("page")) {
+    let pageNum = query.page;
+    return pool.query(`SELECT * FROM info WHERE id = '${pageNum}'`).then(result => {
+      return res.status(200).json({"content": result.rows[0].content.content});
+    }).catch((error) => {
+      return res.json({});
+    });
+  }
+  return res.json({})
+});
+
 app.listen(port, hostname, () => {
   console.log(`Listening at: http://${hostname}:${port}`);
 });

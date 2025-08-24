@@ -27,9 +27,30 @@
   			margin: 0;
 			height: 50px;
 		}
+		#info {
+			position: absolute;
+  			top: 50%;
+  			left: 50%;
+			width: 100%;
+			height: 100%;
+  			transform: translate(-50%, -50%);
+			background-color: white;
+			text-align: center;
+		}
+		#infoContainer {
+			position: absolute;
+			top: 50%;
+			width: 80%;
+			left: 10%;
+			transform: translateY(-50%);
+		}
+		#nextInfo {
+			left: 50%;
+		}
 	</style>
 	</head>
-<body>
+<body id="main">
+	<button id="infoButton" style="position: relative; margin-bottom: 20px";>About this Calculator</button>
 	<ul style="list-style-type: none; margin: 0; padding: 0;">
 		<div id="grid">
 					
@@ -60,6 +81,64 @@
 		let status = {};
 		let clickedGag;
 		let hoveredGag = false;
+		let infoPage = 1;
+
+		function nextPage(text) {
+			while (text.firstChild) {
+  				text.removeChild(text.firstChild);
+			}
+
+			let p = document.createElement("p");
+			fetch(`/info?page=${infoPage}`).then(response => {
+        		return response.json();
+    		}).then((body) => {
+				if (body.hasOwnProperty("content")) {
+					let content = body.content;
+					console.log(content);
+					for (let i = 0; i < content.length; i++) {
+						p.textContent = content[i];
+						text.appendChild(p);
+						p = document.createElement("p");
+					}
+					let next = document.createElement("button");
+					next.addEventListener("click", (event) => nextPage(text));
+					next.textContent = "Next";
+					next.style.float = "right";
+					next.id = "nextInfo";
+					text.appendChild(next);
+					infoPage++;
+				} else {
+					document.getElementById("info").remove();
+				}
+			}).catch((error) => {
+        		while (text.firstChild) {
+  					text.removeChild(text.firstChild);
+				}
+				p.textContent = "Something went wrong with the server.";
+				text.appendChild(p);
+    		}); 
+		}
+
+		function infoButton(event) {
+			infoPage = 1;
+			let div = document.createElement("div");
+			div.id = "info";
+			document.getElementById("main").appendChild(div);
+			let X = document.createElement("button");
+			X.addEventListener("click", (event) => {
+				div.remove();
+			});
+			X.textContent = "X";
+			X.style.float = "right";
+			div.appendChild(X);
+			let text = document.createElement("div");
+			text.id = "infoContainer";
+			nextPage(text);
+			div.appendChild(text);
+		}
+		
+		let info = document.getElementById("infoButton")
+		info.addEventListener("click", infoButton);
 
 		function hideGagInfo(event) {
 			let div = document.getElementById("gagInfo");
@@ -306,7 +385,7 @@
 					button.id = data.gagname;
 					button.addEventListener("click", (x) => gagButton(button.id, x));
 					cell.addEventListener("mouseenter", (x) => gagHoverOn(button.id, x));
-					cell.addEventListener("mouseleave", hideGagInfo);
+					//cell.addEventListener("mouseleave", hideGagInfo);
 					cell.appendChild(button);
 					row.appendChild(cell);
 

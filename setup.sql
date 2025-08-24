@@ -67,3 +67,25 @@ INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusE
 INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusEffect) VALUES ('Safe', 'Drop', 60, 70, 50, 1, '{}');
 INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusEffect) VALUES ('Grand Piano', 'Drop', 85, 170, 50, 1, '{}');
 INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusEffect) VALUES ('Toontanic', 'Drop', 180, 180, 50, -1, '{}');
+
+CREATE TABLE info (
+	id SERIAL PRIMARY KEY,
+	content JSON
+);
+
+INSERT INTO info (content) VALUES ('{"content": ["This calculator is used for calculations in the game Toontown Rewritten. Toontown Rewritten, made by Joey Ziolkowski, is a fan-revival of Disney’s closed MMORPG Toontown Online, where anthropomorphic animals called Toons engage in the colorful world in Toontown by participating in various activities.",
+	"However, an invasion of evil robots called Cogs are taking over Toontown by industrializing the city with colorless buildings. But the toons can fight back against these Cogs by using cartoony weapons called Gags to destroy them."]}');
+INSERT INTO info (content) VALUES ('{"content": ["There are seven types of Gags called Gag Tracks that provide different abilities against these Cogs:",
+	"Toon-Up: Heals Toons, but deals no damage against Cogs.",
+	"Trap: Deals powerful damage, but requires a Lure Gag to execute.",
+	"Lure: Not only that it prevents Cogs from attacking, but also draws them into Trap Gags and deals more damage against Throw and Squirt Gags.",
+	"Sound: Deals damage to all Cogs, but the dealt dealt is weak.",
+	"Throw: Deals higher damage against Cogs, but has a lower accuracy.",
+	"Squirt: Provides higher accuracy against Cogs, but deals lower damage.",
+	"Drop: Deals powerful damage, but has a very low accuracy."]}');
+INSERT INTO info (content) VALUES ('{"content": ["This calculator is designed because the developers did not provide a clear indication on how much HP a Cog has left.",
+	"Even though a TTR calculator already exists known as big.brain.io, this calculator will provide status effects, change a gag''s damage value, and deal damage toward multiple Cogs."]}');
+INSERT INTO info (content) VALUES ('{"content": ["To get started, click on any of the Gags on the panel to start calculating.",
+	"Hovering over a Gag will provide information about what the Gag does on the right screen.",
+	"Clicking on that Gag will make that Gag appear on the top screen for the calculation. If a Gag is organic (green leaf icon), click on the ''Org'' button to provide an organic boost on that Gag. To remove that Gag for the calculation, click on the ''X'' button.",
+	"Clicking on the ''Next Turn'' button will apply the calculated damage for the next turn. Clicking on the ''Clear'' button will remove all damage and status appliances from the calculation."]}');
