@@ -56,6 +56,7 @@
 					
 		</div>
 		<li id="calculation">0</li>
+		<li id="accuracy" style="margin-left: 150px">Estimated Accuracy: 100%</li>
 	</ul>
 	<!--<div id="calculation">0</div>-->
 	<!--<button id="calculate">Calculate</button>-->
@@ -77,8 +78,10 @@
 		let initDmg = 0;
 		let totalDmg = 0;
 		let gags = [];
-		let initStatus = {};
-		let status = {};
+		//let initStatus = {};
+		//let status = {};
+		let initCogs = [{"status": {}, "level": 13}]
+		let cogs = [{"status": {}, "level": 13}]
 		let clickedGag;
 		let hoveredGag = false;
 		let infoPage = 1;
@@ -95,7 +98,7 @@
     		}).then((body) => {
 				if (body.hasOwnProperty("content")) {
 					let content = body.content;
-					console.log(content);
+					//console.log(content);
 					for (let i = 0; i < content.length; i++) {
 						p.textContent = content[i];
 						text.appendChild(p);
@@ -321,6 +324,58 @@
 
 		//function calculate(event) {
 		function calculate() {
+			for (let i = 0; i < cogs.length; i++) {
+				fetch("/cogs",
+        		{
+        		headers: {
+        		    'Accept': 'application/json',
+        		    'Content-Type': 'application/json'
+        		},
+        		method: "POST",
+				body: JSON.stringify({"cog": initCogs[i]})}
+    			).then(response => {
+    		    	return response.json();
+    			}).then((cog) => {
+					if (cog.hasOwnProperty("cogData")) {
+						initCogs[i] = cog.cogData;
+					}
+					fetch("/calculate",
+        				{
+    		    		headers: {
+    		    		    'Accept': 'application/json',
+    		    		    'Content-Type': 'application/json'
+    		    		},
+    		    		method: "POST",
+						//body: JSON.stringify({"gags": gags, "status": initStatus})}
+						body: JSON.stringify({"gags": gags, "cogs": initCogs[i]})}
+    				).then(response => {
+    				    return response.json();
+    				}).then((body) => {
+						//console.log(body.hasOwnProperty("totalDamage"));
+    				    if (body.hasOwnProperty("totalDamage")) {
+    				        let div = document.getElementById("calculation");
+							let acc = document.getElementById("accuracy");
+							//div.textContent = parseInt(div.textContent) + body.totalDamage;
+							totalDmg = initDmg + body.totalDamage;
+							div.textContent = totalDmg;
+							acc.textContent = `Estimated Accuracy: ${body.totalAcc * 100}%`;
+							//status = body.status
+							cogs[i] = body.cogs
+							updateCalc();
+    				    } else {
+    				        gags.pop();
+    				    }
+						//gags = [];
+    				}).catch((error) => {
+    				    //gags = [];
+						gags.pop();
+    				});
+				}).catch((error) => {
+        			;
+    			});
+			}
+
+			/*
 			fetch("/calculate",
         		{
         		headers: {
@@ -328,7 +383,8 @@
         		    'Content-Type': 'application/json'
         		},
         		method: "POST",
-				body: JSON.stringify({"gags": gags, "status": initStatus})}
+				//body: JSON.stringify({"gags": gags, "status": initStatus})}
+				body: JSON.stringify({"gags": gags, "cogs": initCogs})}
     		).then(response => {
     		    return response.json();
     		}).then((body) => {
@@ -336,8 +392,10 @@
     		        let div = document.getElementById("calculation");
 					//div.textContent = parseInt(div.textContent) + body.totalDamage;
 					totalDmg = initDmg + body.totalDamage;
+					//console.log(body.totalAcc);
 					div.textContent = totalDmg;
-					status = body.status
+					//status = body.status
+					cogs = body.cogs
 					updateCalc();
     		    } else {
     		        gags.pop();
@@ -347,31 +405,47 @@
     		    //gags = [];
 				gags.pop();
     		});
+			*/
 		}
 		function clearCalc(event) {
 			let div = document.getElementById("calculation");
 			div.textContent = 0;
 			initDmg = 0;
 			totalDmg = 0;
+			acc.textContent = "Estimated Accuracy: 100%";
 			gags = [];
-			initStatus = {};
-			status = {};
+			//initStatus = {};
+			//status = {};
+			initCogs = [{"status": {}, "level": 7}]
+			cogs = [{"status": {}, "level": 7}]
 			clickedGag = undefined;
 			hideGagInfo();
 			updateCalc();
 		}
 		function nextTurn(event) {
 			gags = [];
-			initStatus = status;
+			//initStatus = status;
+			initCogs = cogs;
 			initDmg = totalDmg;
-			for (let pair of Object.entries(initStatus)) {
+			acc.textContent = "Estimated Accuracy: 100%";
+			/*for (let pair of Object.entries(initStatus)) {
     			let stat = initStatus[pair[0]];
     			if (stat.rounds == 1) {
       				delete initStatus[pair[0]];
     			} else {
       				stat.rounds--;
     			}
- 			}
+ 			}*/
+			for (let cog of initCogs) {
+				for (let pair of Object.entries(cog.status)) {
+    				let stat = cog.status[pair[0]];
+    				if (stat.rounds == 1) {
+      					delete cog.status[pair[0]];
+    				} else {
+      					stat.rounds--;
+    				}
+ 				}
+			}
 			clickedGag = undefined;
 			hideGagInfo();
 			updateCalc();

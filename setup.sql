@@ -68,6 +68,34 @@ INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusE
 INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusEffect) VALUES ('Grand Piano', 'Drop', 85, 170, 50, 1, '{}');
 INSERT INTO gags (gagName, gagType, minDmg, maxDmg, accuracy, targetNum, statusEffect) VALUES ('Toontanic', 'Drop', 180, 180, 50, -1, '{}');
 
+CREATE TABLE cogs (
+	id SERIAL PRIMARY KEY,
+	levelID INT,
+	hp INT,
+	tgtDef INT
+);
+
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (1, 6, -2);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (2, 12, -5);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (3, 20, -10);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (4, 30, -15);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (5, 42, -20);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (6, 56, -25);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (7, 72, -30);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (8, 90, -35);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (9, 110, -40);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (10, 132, -45);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (11, 156, -50);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (12, 196, -55);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (13, 224, -60);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (14, 254, -60);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (15, 286, -63);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (16, 320, -63);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (17, 356, -65);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (18, 394, -65);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (19, 434, -65);
+INSERT INTO cogs (levelID, hp, tgtDef) VALUES (20, 476, -65);
+
 CREATE TABLE info (
 	id SERIAL PRIMARY KEY,
 	content JSON
