@@ -79,7 +79,7 @@ INSERT INTO info (content) VALUES ('{"content": ["There are seven types of Gags 
 	"Toon-Up: Heals Toons, but deals no damage against Cogs.",
 	"Trap: Deals powerful damage, but requires a Lure Gag to execute.",
 	"Lure: Not only that it prevents Cogs from attacking, but also draws them into Trap Gags and deals more damage against Throw and Squirt Gags.",
-	"Sound: Deals damage to all Cogs, but the dealt dealt is weak.",
+	"Sound: Deals damage to all Cogs, but the damage dealt is weak.",
 	"Throw: Deals higher damage against Cogs, but has a lower accuracy.",
 	"Squirt: Provides higher accuracy against Cogs, but deals lower damage.",
 	"Drop: Deals powerful damage, but has a very low accuracy."]}');
@@ -87,5 +87,5 @@ INSERT INTO info (content) VALUES ('{"content": ["This calculator is designed be
 	"Even though a TTR calculator already exists known as big.brain.io, this calculator will provide status effects, change a gag''s damage value, and deal damage toward multiple Cogs."]}');
 INSERT INTO info (content) VALUES ('{"content": ["To get started, click on any of the Gags on the panel to start calculating.",
 	"Hovering over a Gag will provide information about what the Gag does on the right screen.",
-	"Clicking on that Gag will make that Gag appear on the top screen for the calculation. If a Gag is organic (green leaf icon), click on the ''Org'' button to provide an organic boost on that Gag. To remove that Gag for the calculation, click on the ''X'' button.",
+	"Clicking on that Gag will make that Gag appear on the top screen for the calculation. You can modify the Gag''s damage by typing the damage value on the bottom of its panel. If a Gag is organic (green leaf icon), click on the ''Org'' button to provide an organic boost on that Gag. To remove that Gag for the calculation, click on the ''X'' button.",
 	"Clicking on the ''Next Turn'' button will apply the calculated damage for the next turn. Clicking on the ''Clear'' button will remove all damage and status appliances from the calculation."]}');

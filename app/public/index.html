@@ -25,7 +25,7 @@
 			display: flex;
 			padding: 0;
   			margin: 0;
-			height: 50px;
+			height: 80px;
 		}
 		#info {
 			position: absolute;
@@ -82,6 +82,7 @@
 		let clickedGag;
 		let hoveredGag = false;
 		let infoPage = 1;
+		let typingTimer;
 
 		function nextPage(text) {
 			while (text.firstChild) {
@@ -218,6 +219,21 @@
     		}); 
 		}
 
+		function gagDmgInput(value, gagIndex, event) {
+			let keys = gagIndex.split(/\s+/);
+			let gag = gags[parseInt(keys[1])];
+			let dmg = parseInt(value);
+			if (dmg < gag.mindmg) {
+				gag.currDmg = gag.mindmg;
+			} else if (dmg > gag.maxdmg) {
+				gag.currDmg = gag.maxdmg;
+			} else {
+				gag.currDmg = dmg;
+			}
+			showGagInfo(gag.gagname);
+			calculate();
+		}
+
 		function orgButton (gagIndex, event) {
 			if (gags[gagIndex].statuseffect.hasOwnProperty("organic")) {
 				delete gags[gagIndex].statuseffect.organic;
@@ -271,6 +287,26 @@
 				cell.classList.add("gagIcon");
 				cell.textContent = gag.gagname;
 				div.appendChild(cell);
+				let gagInput = document.createElement("input");
+				gagInput.value = `${gag.currDmg}`;
+				gagInput.id = `input ${gagIndex - 1}`
+				gagInput.style.width = "20px";
+				gagInput.style.height = "10px";
+				//gagInput.addEventListener('input', (x) => gagDmgInput(gagInput.value, gagInput.id, x));
+				gagInput.addEventListener('keyup', () => {
+        			clearTimeout(typingTimer);
+        			if (gagInput.value) {
+            			typingTimer = setTimeout((x) => gagDmgInput(gagInput.value, gagInput.id, x), 1000);
+        			}
+    			});
+				gagInput.addEventListener('keydown', () => {
+        			clearTimeout(typingTimer);
+    			});
+				div.appendChild(gagInput);
+				let note = document.createElement("li");
+				note.textContent = `${gag.mindmg}-${gag.maxdmg}`;
+				note.style.fontSize = "10px";
+				div.appendChild(note);
 				grid.appendChild(div);
 				let operator = document.createElement("li");
 				if (gagIndex === gags.length) {

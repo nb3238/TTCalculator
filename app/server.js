@@ -27,7 +27,7 @@ class Gag {
   }
 
   getDmg(status) {
-    let dmg = this.data.maxdmg;
+    let dmg = this.data.currDmg;
     if (this.data.statuseffect.hasOwnProperty("organic")) {
       dmg = Math.ceil((dmg * this.orgBoost).toFixed(1));
     }
@@ -223,12 +223,17 @@ app.get("/gags", (req, res) => {
       if (rows.length === 0) {
         return res.status(200).json({});
       }
+      rows[0].currDmg = rows[0].maxdmg;
       return res.status(200).json({gag: rows});
     }).catch((error) => {
       return res.json({});
     });
   }
   pool.query("SELECT * FROM gags").then(result => {
+      let rows = result.rows;
+      for (let row of rows) {
+        row.currDmg = row.maxdmg;
+      }
       return res.status(200).json({gag: result.rows});
     }).catch((error) => {
       return res.json({});
