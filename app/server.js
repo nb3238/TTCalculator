@@ -3,7 +3,8 @@ const express = require("express");
 const app = express();
 
 const port = 3000;
-const hostname = "localhost";
+//const hostname = "localhost";
+const hostname = "tt-calculator-ebzt";
 
 const env = require("../env.json");
 const Pool = pg.Pool;
