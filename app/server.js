@@ -78,33 +78,26 @@ class ToonUp extends Gag {
   }
 
   getAccuracy(cog, stun) {
-    pool.query(`SELECT * FROM cogs WHERE levelID = '${cog.level}'`).then(result => {
-      let rows = result.rows;
-      if (rows.length != 1) {
-        return 0;
-      }
-      let acc = this.data.accuracy;
-      if (this.data.statuseffect.hasOwnProperty("accuracyUp")) {
-        acc += this.data.statuseffect.accuracyUp;
-      }
-      let trackExp = ((this.data.id - 1) % 7) * 10;
-      if (this.data.currDmg === this.data.maxdmg) {
-        acc += 30
-      } else {
-        acc += trackExp / 2;
-      }
-      acc += stun;
+    let acc = this.data.accuracy;
+    if (this.data.statuseffect.hasOwnProperty("accuracyUp")) {
+      acc += this.data.statuseffect.accuracyUp;
+    }
+    let trackExp = ((this.data.id - 1) % 7) * 10;
+    if (this.data.currDmg === this.data.maxdmg) {
+      acc += 30
+    } else {
+      acc += trackExp / 2;
+    }
+    acc += cog.tgtdef;
+    acc += stun;
 
-      if (acc > 95) {
-        return 95;
-      } else if (acc < 5) {
-        return 5;
-      } else {
-        return acc;
-      }
-    }).catch((error) => {
-      return 0;
-    });
+    if (acc > 95) {
+      return 95;
+    } else if (acc < 5) {
+      return 5;
+    } else {
+      return acc;
+    }
   }
 }
 
@@ -121,6 +114,32 @@ class Trap extends Gag {
 class Lure extends Gag {
   constructor(data) {
     super(data);
+  }
+
+  getAccuracy(cog, stun) {
+    let acc = this.data.accuracy;
+    if (this.data.statuseffect.hasOwnProperty("organic")) {
+      acc += 10;
+    }
+    if (this.data.statuseffect.hasOwnProperty("accuracyUp")) {
+      acc += this.data.statuseffect.accuracyUp;
+    }
+    let trackExp = ((this.data.id - 1) % 7) * 10;
+    if (this.data.currDmg === this.data.maxdmg) {
+      acc += 60
+    } else {
+      acc += trackExp;
+    }
+    acc += cog.tgtdef;
+    acc += stun;
+
+    if (acc > 95) {
+      return 95;
+    } else if (acc < 5) {
+      return 5;
+    } else {
+      return acc;
+    }
   }
 }
 
@@ -241,7 +260,6 @@ function getGagTrack(gag) {
     similarGags.sort((a, b) => b.statuseffect.lured.rounds - a.statuseffect.lured.rounds);
     for (let i = 1; i < similarGags.length; i++) {
       let gag = similarGags[i];
-      console.log(gag)
       if ((gag.id - 1) % 7 < 2) {
         gagTypeAccuracy = increaseGagAcc(gagTypeAccuracy, 10);
       } else if ((gag.id - 1) % 7 < 4) {
@@ -253,6 +271,7 @@ function getGagTrack(gag) {
     if (!cog.status.hasOwnProperty("trapped")) {
       cog.status.lured = {"rounds": similarGags[0].statuseffect.lured.rounds};
     } else {
+      gagTypeAccuracy = increaseGagAcc(gagTypeAccuracy, 10);
       totalDamage += cog.status.trapped.value;
       delete cog.status.trapped;
       stun += 50;

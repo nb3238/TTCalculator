@@ -25,7 +25,7 @@
 			display: flex;
 			padding: 0;
   			margin: 0;
-			height: 80px;
+			height: 100px;
 		}
 		#info {
 			position: absolute;
@@ -80,8 +80,8 @@
 		let gags = [];
 		//let initStatus = {};
 		//let status = {};
-		let initCogs = [{"status": {}, "level": 13}]
-		let cogs = [{"status": {}, "level": 13}]
+		let initCogs = {"status": {}, "level": 13}
+		let cogs = {"status": {}, "level": 13}
 		let clickedGag;
 		let hoveredGag = false;
 		let infoPage = 1;
@@ -165,10 +165,14 @@
         		return response.json();
     		}).then((body) => {
 				let gag = body.gag[0];
+				let image = document.createElement("img");
 				let name = document.createElement("p");
 				let dmg = document.createElement("p");
 				let acc = document.createElement("p");
 				let targetNum = document.createElement("p");
+				image.src = `images/${gag.gagname}_icon.png`;
+				image.width = "50";
+				image.height = "50";
 				name.textContent = gag.gagname;
 				if (gag.gagtype === "Lure") {
 					dmg.textContent = "Lured Rounds: " + gag.statuseffect.lured.rounds;
@@ -211,6 +215,7 @@
 						targetNum.textContent += " Cogs";
 					}
 				}
+				div.appendChild(image);
 				div.appendChild(name);
 				div.appendChild(dmg);
 				div.appendChild(acc);
@@ -288,7 +293,12 @@
 				div.appendChild(org);
 				let cell = document.createElement("li");
 				cell.classList.add("gagIcon");
-				cell.textContent = gag.gagname;
+				//cell.textContent = gag.gagname;
+				let image = document.createElement("img");
+				image.src = `images/${gag.gagname}_icon.png`;
+				image.width = "30";
+				image.height = "30";
+				cell.appendChild(image);
 				div.appendChild(cell);
 				let gagInput = document.createElement("input");
 				gagInput.value = `${gag.currDmg}`;
@@ -324,7 +334,7 @@
 
 		//function calculate(event) {
 		function calculate() {
-			for (let i = 0; i < cogs.length; i++) {
+			//for (let i = 0; i < cogs.length; i++) {
 				fetch("/cogs",
         		{
         		headers: {
@@ -332,12 +342,12 @@
         		    'Content-Type': 'application/json'
         		},
         		method: "POST",
-				body: JSON.stringify({"cog": initCogs[i]})}
+				body: JSON.stringify({"cog": initCogs})}
     			).then(response => {
     		    	return response.json();
     			}).then((cog) => {
 					if (cog.hasOwnProperty("cogData")) {
-						initCogs[i] = cog.cogData;
+						initCogs = cog.cogData;
 					}
 					fetch("/calculate",
         				{
@@ -347,7 +357,7 @@
     		    		},
     		    		method: "POST",
 						//body: JSON.stringify({"gags": gags, "status": initStatus})}
-						body: JSON.stringify({"gags": gags, "cogs": initCogs[i]})}
+						body: JSON.stringify({"gags": gags, "cogs": initCogs})}
     				).then(response => {
     				    return response.json();
     				}).then((body) => {
@@ -360,7 +370,7 @@
 							div.textContent = totalDmg;
 							acc.textContent = `Estimated Accuracy: ${body.totalAcc * 100}%`;
 							//status = body.status
-							cogs[i] = body.cogs
+							cogs = body.cogs;
 							updateCalc();
     				    } else {
     				        gags.pop();
@@ -373,7 +383,7 @@
 				}).catch((error) => {
         			;
     			});
-			}
+			//}
 
 			/*
 			fetch("/calculate",
@@ -412,12 +422,13 @@
 			div.textContent = 0;
 			initDmg = 0;
 			totalDmg = 0;
+			let acc = document.getElementById("accuracy");
 			acc.textContent = "Estimated Accuracy: 100%";
 			gags = [];
 			//initStatus = {};
 			//status = {};
-			initCogs = [{"status": {}, "level": 7}]
-			cogs = [{"status": {}, "level": 7}]
+			initCogs = {"status": {}, "level": 13};
+			cogs = {"status": {}, "level": 13};
 			clickedGag = undefined;
 			hideGagInfo();
 			updateCalc();
@@ -427,6 +438,7 @@
 			//initStatus = status;
 			initCogs = cogs;
 			initDmg = totalDmg;
+			let acc = document.getElementById("accuracy");
 			acc.textContent = "Estimated Accuracy: 100%";
 			/*for (let pair of Object.entries(initStatus)) {
     			let stat = initStatus[pair[0]];
@@ -436,16 +448,16 @@
       				stat.rounds--;
     			}
  			}*/
-			for (let cog of initCogs) {
-				for (let pair of Object.entries(cog.status)) {
-    				let stat = cog.status[pair[0]];
+			//for (let cog of initCogs) {
+				for (let pair of Object.entries(cogs.status)) {
+    				let stat = cogs.status[pair[0]];
     				if (stat.rounds == 1) {
-      					delete cog.status[pair[0]];
+      					delete cogs.status[pair[0]];
     				} else {
       					stat.rounds--;
     				}
  				}
-			}
+			//}
 			clickedGag = undefined;
 			hideGagInfo();
 			updateCalc();
@@ -487,11 +499,19 @@
 				for (let data of body.gag) {
 					if (data.id % 7 === 1) {
 						row = document.createElement("tr");
+						let label = document.createElement("td");
+						label.textContent = data.gagtype;
+						row.appendChild(label);
 					}
 
 					let cell = document.createElement("td");
 					let button = document.createElement("button");
-					button.textContent = data.gagname;
+					//button.textContent = data.gagname;
+					let image = document.createElement("img");
+					image.src = `images/${data.gagname}_icon.png`;
+					image.width = "30";
+					image.height = "30";
+					button.appendChild(image);
 					button.id = data.gagname;
 					button.addEventListener("click", (x) => gagButton(button.id, x));
 					cell.addEventListener("mouseenter", (x) => gagHoverOn(button.id, x));
